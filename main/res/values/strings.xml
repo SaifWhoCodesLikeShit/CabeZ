@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">CabEZ</string>
+    <string name="title_activity_userlogin">userlogin</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="hello_world">Hello Square World!</string>
+    <string name="title_activity_userregister">userregister</string>
+    <string name="title_activity_customermapsactivity">Map</string>
+    <string name="title_activity_drivermap">Map</string>
+    <string name="title_activity_drive_set">drive_set</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="api_key">AIzaSyD_XmctIMKWjSqyg8nQoB6_1sPf4ILKGyA</string>
+</resources>
