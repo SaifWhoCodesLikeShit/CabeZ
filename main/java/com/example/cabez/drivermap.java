@@ -37,6 +37,7 @@ import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -65,7 +66,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class drivermap extends FragmentActivity implements OnMapReadyCallback, RoutingListener {
+
+public class drivermapactivity extends FragmentActivity implements OnMapReadyCallback {
+
 
     private GoogleMap mMap;
     Location mLastLocation;
@@ -97,20 +100,14 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_drivermap);
+        setContentView(R.layout.activity_drivermapactivity);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        polylines = new ArrayList<>();
-
-
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-
-
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mCustomerInfo = (LinearLayout) findViewById(R.id.customerInfo);
-
         mCustomerProfileImage = (ImageView) findViewById(R.id.customerProfileImage);
 
         mCustomerName = (TextView) findViewById(R.id.customerName);
@@ -121,9 +118,9 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
         mWorkingSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
+                if (isChecked) {
                     connectDriver();
-                }else{
+                } else {
                     disconnectDriver();
                 }
             }
@@ -136,19 +133,19 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
         mRideStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch(status){
+                switch (status) {
                     case 1:
-                        status=2;
-                        erasePolylines();
-                        if(destinationLatLng.latitude!=0.0 && destinationLatLng.longitude!=0.0){
-                            getRouteToMarker(destinationLatLng);
+                        status = 2;
+                        //erasePolylines();
+                        if (destinationLatLng.latitude != 0.0 && destinationLatLng.longitude != 0.0) {
+                            //getRouteToMarker(destinationLatLng);
                         }
                         mRideStatus.setText("drive completed");
 
                         break;
                     case 2:
-                        recordRide();
-                        endRide();
+                       // recordRide();
+                       // endRide();
                         break;
                 }
             }
@@ -162,7 +159,7 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
                 disconnectDriver();
 
                 FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(drivermap.this, MainActivity.class);
+                Intent intent = new Intent(drivermapactivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
                 return;
@@ -171,7 +168,7 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
         mSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(drivermap.this, drive_set.class);
+                Intent intent = new Intent(drivermapactivity.this, drive_set.class);
                 startActivity(intent);
                 return;
             }
@@ -179,13 +176,15 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
         mHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(drivermap.this, drive_set.class);
+                Intent intent = new Intent(drivermapactivity.this, his_activity.class);
                 intent.putExtra("customerOrDriver", "Drivers");
                 startActivity(intent);
                 return;
             }
         });
+
         getAssignedCustomer();
+
     }
 
     private void getAssignedCustomer(){
@@ -230,7 +229,7 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
                         locationLng = Double.parseDouble(map.get(1).toString());
                     }
                     pickupLatLng = new LatLng(locationLat,locationLng);
-                    pickupMarker = mMap.addMarker(new MarkerOptions().position(pickupLatLng).title("pickup location").icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_round)));
+                    pickupMarker = mMap.addMarker(new MarkerOptions().position(pickupLatLng).title("pickup location").icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
                     getRouteToMarker(pickupLatLng);
                 }
             }
@@ -245,7 +244,7 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
         if (pickupLatLng != null && mLastLocation != null){
             Routing routing = new Routing.Builder()
                     .travelMode(AbstractRouting.TravelMode.DRIVING)
-                    .withListener(this)
+                    .withListener((RoutingListener) this)
                     .alternativeRoutes(false)
                     .waypoints(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()), pickupLatLng)
                     .build();
@@ -340,7 +339,7 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
         mCustomerName.setText("");
         mCustomerPhone.setText("");
         mCustomerDestination.setText("Destination: --");
-        mCustomerProfileImage.setImageResource(R.mipmap.ic_launcher);
+        mCustomerProfileImage.setImageResource(R.mipmap.ic_default_user);
     }
 
     private void recordRide(){
@@ -376,7 +375,7 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-       // mLocationRequest = new LocationRequest();
+        mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(1000);
         mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -438,14 +437,14 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                ActivityCompat.requestPermissions(drivermap.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                                ActivityCompat.requestPermissions(drivermapactivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
                             }
                         })
                         .create()
                         .show();
             }
             else{
-                ActivityCompat.requestPermissions(drivermap.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                ActivityCompat.requestPermissions(drivermapactivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
         }
     }
@@ -457,7 +456,7 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
             case 1:{
                 if(grantResults.length >0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-                        //mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+                        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
                         mMap.setMyLocationEnabled(true);
                     }
                 } else{
@@ -474,7 +473,7 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
 
     private void connectDriver(){
         checkLocationPermission();
-       // mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
         mMap.setMyLocationEnabled(true);
     }
 
@@ -496,7 +495,7 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
 
     private List<Polyline> polylines;
     private static final int[] COLORS = new int[]{R.color.primary_dark_material_light};
-    @Override
+
     public void onRoutingFailure(RouteException e) {
         if(e != null) {
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -504,10 +503,10 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
             Toast.makeText(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
         }
     }
-    @Override
+
     public void onRoutingStart() {
     }
-    @Override
+
     public void onRoutingSuccess(ArrayList<Route> route, int shortestRouteIndex) {
         if(polylines.size()>0) {
             for (Polyline poly : polylines) {
@@ -533,7 +532,7 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
         }
 
     }
-    @Override
+
     public void onRoutingCancelled() {
     }
     private void erasePolylines(){
@@ -542,5 +541,10 @@ public class drivermap extends FragmentActivity implements OnMapReadyCallback, R
         }
         polylines.clear();
     }
+
+
+
+
+
 
 }
